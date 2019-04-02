@@ -73,6 +73,11 @@ The object that describes the form. The values in the object are used as the ini
 
 The callback that gets called when the form is submitted.
 
+It receives 2 paramters:
+
+ - `data` - The current state of the form.
+ - `reset` - A function to reset the form to its original values.
+
 ```js
 (data) => {
   SomeAPI.save(data)

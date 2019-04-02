@@ -223,6 +223,45 @@ describe('React Stateful Form', () => {
       }}
     </MyForm>)
   })
+
+  it('should provide a reset function', () => {
+    const wrapper = mount(
+      <StatefulForm
+        data={{
+          test: 'init'
+        }}
+        onSubmit={(data, reset) => {
+          expect(data.test).toBe('passed')
+          reset()
+        }}
+      >
+        {({input}) => {
+          return input('test', ({value, reset, update}) => {
+            return <div className="control">
+              <input value={value} onChange={(e) => update(e.target.value)} />
+              <button onClick={() => reset()}>Reset</button>
+            </div>
+          })
+        }}
+      </StatefulForm>
+    )
+
+    const input = wrapper.find('input')
+    input.simulate('change', {target: {value: 'passed'}})
+
+    expect((input.instance() as any).value).toBe('passed')
+
+    const button = wrapper.find('button')
+    button.simulate('click')
+
+    expect((input.instance() as any).value).toBe('init')
+
+    input.simulate('change', {target: {value: 'passed'}})
+
+    wrapper.find('form').simulate('submit')
+
+    expect((input.instance() as any).value).toBe('init')
+  })
 })
 
 const MyForm = function<T>(props: FormProps<T, RenderFunction<T, {test: string}>>){

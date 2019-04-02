@@ -12,7 +12,7 @@ export interface FormProps<T, K = RenderFunction<T>>{
    * 
    * `data` will match the object passed to `StatefulForm` with any changes made to it.
    */
-  onSubmit: (data: T) => void
+  onSubmit: (data: T, reset: () => void) => void
 
   /**
    * (optional) used to validate the data in the form. 
@@ -27,6 +27,7 @@ export type RenderFunction<T, K = {}> = (
     Input: React.FunctionComponent<InputComponentProps<T>>
     valid: (field?: keyof T, value?: any) => boolean
     Select: React.FunctionComponent<SelectComponentProps<T>>
+    reset: () => void
   } & K
 ) => React.ReactElement
 
@@ -53,6 +54,7 @@ export interface InputRenderFunctionArguments<T>{
   update: (value: any) => void
   value: any
   valid: () => boolean
+  reset: () => void
 }
 
 export interface InputComponentProps<T>{
@@ -78,6 +80,10 @@ export const StatefulForm = function<T>({
 }: FormProps<T>){
   const [fields, setFields] = useState(data)
 
+  const reset = () => {
+    setFields(data)
+  }
+
   const input: InputFunction<T> = (field, f) => {
     const update = (value: any) => {
       let updated = Object.assign({}, fields)
@@ -97,12 +103,17 @@ export const StatefulForm = function<T>({
       })
     }
 
+    const reset = () => {
+      update(data[field])
+    }
+
     return f({
       fields,
       field,
       update,
       value: fields[field],
-      valid
+      valid,
+      reset
     })
   }
 
@@ -146,13 +157,14 @@ export const StatefulForm = function<T>({
     return !!response[field]
   }
 
-  return <form onSubmit={() => onSubmit(fields)}>
+  return <form onSubmit={() => onSubmit(fields, reset)}>
     {render({
       fields,
       input,
       Input,
       valid,
-      Select
+      Select,
+      reset
     })}
   </form>
 }
