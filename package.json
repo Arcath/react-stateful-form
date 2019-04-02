@@ -1,0 +1,33 @@
+{
+  "name": "react-stateful-form",
+  "version": "0.0.0",
+  "description": "From component for React using react state hooks",
+  "main": "lib/react-stateful-form.js",
+  "scripts": {
+    "test": "jest",
+    "compile": "tsc",
+    "prepublishOnly": "tsc"
+  },
+  "keywords": [
+    "react",
+    "form",
+    "stateful"
+  ],
+  "author": "Adam Laycock <adam@arcath.net>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/enzyme": "^3.9.1",
+    "@types/enzyme-adapter-react-16": "^1.0.5",
+    "@types/jest": "^24.0.11",
+    "@types/react": "^16.8.10",
+    "@types/react-test-renderer": "^16.8.1",
+    "enzyme": "^3.9.0",
+    "enzyme-adapter-react-16": "^1.11.2",
+    "jest": "^24.5.0",
+    "react": "^16.8.5",
+    "react-dom": "^16.8.6",
+    "react-test-renderer": "^16.8.6",
+    "ts-jest": "^24.0.1",
+    "typescript": "^3.3.4000"
+  }
+}
