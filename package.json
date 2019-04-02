@@ -1,6 +1,6 @@
 {
   "name": "react-stateful-form-component",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "From component for React using react state hooks",
   "main": "lib/react-stateful-form.js",
   "scripts": {
