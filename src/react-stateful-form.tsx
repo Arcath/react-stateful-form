@@ -1,7 +1,5 @@
 import * as React from 'react'
 
-const {useState} = React
-
 export interface FormProps<T, K = RenderFunction<T>>{
   /** The initial data for the form */
   data: T
@@ -72,99 +70,109 @@ const keys = function<T>(object: T): (keyof T)[]{
   return Object.keys(object) as any
 }
 
-export const StatefulForm = function<T>({
-  children: render,
-  data,
-  onSubmit,
-  validator
-}: FormProps<T>){
-  const [fields, setFields] = useState(data)
+export class StatefulForm<T> extends React.Component<FormProps<T>, {fields: T}>{
+  constructor(props: FormProps<T>){
+    super(props)
 
-  const reset = () => {
-    setFields(data)
+    this.state = {
+      fields: props.data
+    }
   }
 
-  const input: InputFunction<T> = (field, f) => {
-    const update = (value: any) => {
-      let updated = Object.assign({}, fields)
+  render(){
+    const {data, onSubmit, validator, children: render} = this.props
+    const {fields} = this.state
 
-      updated[field] = value
-
-      setFields(updated)
-    }
-
-    const valid = () => {
-      if(!validator) return true
-
-      return !!validator({
-        field,
-        value: fields[field],
-        fields
-      })
+    const setFields = (fields: T) => {
+      this.setState({fields})
     }
 
     const reset = () => {
-      update(data[field])
+      setFields(data)
     }
 
-    return f({
-      fields,
-      field,
-      update,
-      value: fields[field],
-      valid,
-      reset
-    })
-  }
+    const input: InputFunction<T> = (field, f) => {
+      const update = (value: any) => {
+        let updated = Object.assign({}, fields)
 
-  const Input: React.FunctionComponent<InputComponentProps<T>> = ({field, type}) => {
-    return input(field, ({value, update}) => {
-      return <input name={field as string} type={type ? type : 'text'} value={value} onChange={(e) => update(e.target.value)} />
-    })
-  }
+        updated[field] = value
 
-  const Select: React.FunctionComponent<SelectComponentProps<T>> = ({field, options}) => {
-    return input(field, ({value, update}) => {
-      return <select name={field as string} onChange={(e) => update(e.target.value)} value={value}>
-        {options.map((option) => {
-          return <option value={option.value} key={option.value}>{option.label}</option>
-        })}
-      </select>
-    })
-  }
+        setFields(updated)
+      }
 
-  const valid = (field?: keyof T, value?: any) => {
-    if(!validator){
-      return true
-    }
+      const valid = () => {
+        if(!validator) return true
 
-    const response: Partial<ValidatorResponse<T>> = {}
+        return !!validator({
+          field,
+          value: fields[field],
+          fields
+        })
+      }
 
-    keys(data).forEach((key) => {
-      response[key] = validator({
-        field: key,
-        value: fields[key],
-        fields: data
+      const reset = () => {
+        update(data[field])
+      }
+
+      return f({
+        fields,
+        field,
+        update,
+        value: fields[field],
+        valid,
+        reset
       })
-    })
-
-    if(!field){
-      return Object.keys(data).reduce((test, field) => {
-        return (test && !!response[field])
-      }, true)
     }
 
-    return !!response[field]
-  }
+    const Input: React.FunctionComponent<InputComponentProps<T>> = ({field, type}) => {
+      return input(field, ({value, update}) => {
+        return <input name={field as string} type={type ? type : 'text'} value={value} onChange={(e) => update(e.target.value)} />
+      })
+    }
 
-  return <form onSubmit={() => onSubmit(fields, reset)}>
-    {render({
-      fields,
-      input,
-      Input,
-      valid,
-      Select,
-      reset
-    })}
-  </form>
+    const Select: React.FunctionComponent<SelectComponentProps<T>> = ({field, options}) => {
+      return input(field, ({value, update}) => {
+        return <select name={field as string} onChange={(e) => update(e.target.value)} value={value}>
+          {options.map((option) => {
+            return <option value={option.value} key={option.value}>{option.label}</option>
+          })}
+        </select>
+      })
+    }
+
+    const valid = (field?: keyof T, value?: any) => {
+      if(!validator){
+        return true
+      }
+
+      const response: Partial<ValidatorResponse<T>> = {}
+
+      keys(data).forEach((key) => {
+        response[key] = validator({
+          field: key,
+          value: fields[key],
+          fields: data
+        })
+      })
+
+      if(!field){
+        return Object.keys(data).reduce((test, field) => {
+          return (test && !!response[field])
+        }, true)
+      }
+
+      return !!response[field]
+    }
+
+    return <form onSubmit={() => onSubmit(fields, reset)}>
+      {render({
+        fields,
+        input,
+        Input,
+        valid,
+        Select,
+        reset
+      })}
+    </form>
+  }
 }
