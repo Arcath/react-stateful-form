@@ -26,6 +26,7 @@ export type RenderFunction<T, K = {}> = (
     valid: (field?: keyof T, value?: any) => boolean
     Select: React.FunctionComponent<SelectComponentProps<T>>
     reset: () => void
+    update: (field: keyof T, value: any) => void
   } & K
 ) => React.ReactElement
 
@@ -89,6 +90,14 @@ export class StatefulForm<T> extends React.Component<FormProps<T>, {fields: T}>{
 
     const reset = () => {
       setFields(data)
+    }
+
+    const update = (field: keyof T, value: any) => {
+      let updated = Object.assign({}, fields)
+
+      updated[field] = value
+
+      setFields(updated)
     }
 
     const input: InputFunction<T> = (field, f) => {
@@ -171,7 +180,8 @@ export class StatefulForm<T> extends React.Component<FormProps<T>, {fields: T}>{
         Input,
         valid,
         Select,
-        reset
+        reset,
+        update
       })}
     </form>
   }
