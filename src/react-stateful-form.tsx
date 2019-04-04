@@ -192,7 +192,10 @@ export class StatefulForm<T, P> extends React.Component<FormProps<T, P>, {fields
       })
     }
 
-    return <form onSubmit={() => onSubmit(fields, reset)}>
+    return <form onSubmit={(e) => {
+      e.preventDefault()
+      onSubmit(fields, reset)
+    }}>
       {render({
         fields,
         input,

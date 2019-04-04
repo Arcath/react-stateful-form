@@ -50,7 +50,7 @@ describe('React Stateful Form', () => {
 
     input.simulate('change', {target: {value: 'pass'}})
 
-    wrapper.props().onSubmit()
+    wrapper.simulate('submit', {preventDefault: () => {}})
 
     /** In the abcense of a validator it should always be valid */
     expect(input.props().className).toBe('valid')
@@ -93,7 +93,7 @@ describe('React Stateful Form', () => {
     select.simulate('change', {target: {value: 1}})
 
     /** Unlike shallow rendering the form tag is not the root node when using `mount` */
-    wrapper.find('form').props().onSubmit({} as any)
+    wrapper.find('form').simulate('submit', {preventDefault: () => {}})
   })
 
   it('should support validation', () => {
