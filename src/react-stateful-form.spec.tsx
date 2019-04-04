@@ -4,7 +4,7 @@ import * as Adapter from 'enzyme-adapter-react-16'
 
 configure({ adapter: new Adapter() })
 
-import {StatefulForm, FormProps, RenderFunction} from './react-stateful-form'
+import {StatefulForm, RenderFunctionArguments} from './react-stateful-form'
 
 describe('React Stateful Form', () => {
   it('should output the child render functions output', () => {
@@ -209,21 +209,6 @@ describe('React Stateful Form', () => {
     expect(wrapper.find('input').length).toBe(3)
   })
 
-  it('should support property injection', () => {
-    shallow(<MyForm
-      data={{
-        test: 'init'
-      }}
-      onSubmit={() => {}}
-    >
-      {({test}) => {
-        expect(test).toBe('passed')
-
-        return <b>Test</b>
-      }}
-    </MyForm>)
-  })
-
   it('should provide a reset function', () => {
     const wrapper = mount(
       <StatefulForm
@@ -262,18 +247,28 @@ describe('React Stateful Form', () => {
 
     expect((input.instance() as any).value).toBe('init')
   })
+
+  it('should support prop injection', () => {
+    const data = {
+      test: 'init'
+    }
+
+    const injectable = function<T>({}: RenderFunctionArguments<T>){
+      return {
+        test: true
+      }
+    }
+
+    mount(
+      <StatefulForm data={data} onSubmit={() => {}} injectable={injectable}>
+        {({inject}) => {
+          const {test} = inject()
+
+          expect(test).toBe(true)
+
+          return <b>test passed</b>
+        }}
+      </StatefulForm>
+    )
+  })
 })
-
-const MyForm = function<T>(props: FormProps<T, RenderFunction<T, {test: string}>>){
-  return <StatefulForm
-    data={props.data}
-    onSubmit={props.onSubmit}
-    validator={props.validator}
-  >
-    {(args: any) => {
-      args.test = 'passed'
-
-      return props.children(args)
-    }}
-  </StatefulForm>
-}

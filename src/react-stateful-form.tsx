@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-export interface FormProps<T, K = RenderFunction<T>>{
+export interface FormProps<T, P, K = RenderFunction<T, P>>{
   /** The initial data for the form */
   data: T
   /** A function that returns the rendered output for the form */
@@ -16,18 +16,25 @@ export interface FormProps<T, K = RenderFunction<T>>{
    * (optional) used to validate the data in the form. 
    */
   validator?: ValidatorFunction<T>
+
+  //injectable?: (args: RenderFunctionArguments<T>) => P
+  injectable?: InjectFunction<T, P>
+}
+
+export type InjectFunction<T, P> = (args: RenderFunctionArguments<T>) => P
+
+export interface RenderFunctionArguments<T>{
+  fields: T
+  input: InputFunction<T>
+  Input: React.FunctionComponent<InputComponentProps<T>>
+  valid: (field?: keyof T, value?: any) => boolean
+  Select: React.FunctionComponent<SelectComponentProps<T>>
+  reset: () => void
+  update: (field: keyof T, value: any) => void
 }
 
 export type RenderFunction<T, K = {}> = (
-  args: {
-    fields: T
-    input: InputFunction<T>
-    Input: React.FunctionComponent<InputComponentProps<T>>
-    valid: (field?: keyof T, value?: any) => boolean
-    Select: React.FunctionComponent<SelectComponentProps<T>>
-    reset: () => void
-    update: (field: keyof T, value: any) => void
-  } & K
+  args: RenderFunctionArguments<T> & {inject: () => K}
 ) => React.ReactElement
 
 export type ValidatorFunction<T> = (
@@ -71,8 +78,8 @@ const keys = function<T>(object: T): (keyof T)[]{
   return Object.keys(object) as any
 }
 
-export class StatefulForm<T> extends React.Component<FormProps<T>, {fields: T}>{
-  constructor(props: FormProps<T>){
+export class StatefulForm<T, P> extends React.Component<FormProps<T, P>, {fields: T}>{
+  constructor(props: FormProps<T, P>){
     super(props)
 
     this.state = {
@@ -81,7 +88,7 @@ export class StatefulForm<T> extends React.Component<FormProps<T>, {fields: T}>{
   }
 
   render(){
-    const {data, onSubmit, validator, children: render} = this.props
+    const {data, onSubmit, validator, children: render, injectable} = this.props
     const {fields} = this.state
 
     const setFields = (fields: T) => {
@@ -173,6 +180,18 @@ export class StatefulForm<T> extends React.Component<FormProps<T>, {fields: T}>{
       return !!response[field]
     }
 
+    const inject = () => {
+      return injectable({
+        fields,
+        input,
+        Input,
+        valid,
+        reset,
+        update,
+        Select
+      })
+    }
+
     return <form onSubmit={() => onSubmit(fields, reset)}>
       {render({
         fields,
@@ -181,7 +200,8 @@ export class StatefulForm<T> extends React.Component<FormProps<T>, {fields: T}>{
         valid,
         Select,
         reset,
-        update
+        update,
+        inject
       })}
     </form>
   }
