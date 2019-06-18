@@ -156,28 +156,22 @@ export class StatefulForm<T, P> extends React.Component<FormProps<T, P>, {fields
       })
     }
 
-    const valid = (field?: keyof T, value?: any) => {
+    const valid = (field?: keyof T, v?: any) => {
       if(!validator){
         return true
       }
 
-      const response: Partial<ValidatorResponse<T>> = {}
+      const value = v ? v : fields[field]
 
-      keys(data).forEach((key) => {
-        response[key] = validator({
-          field: key,
-          value: fields[key],
-          fields: data
-        })
-      })
-
-      if(!field){
-        return Object.keys(data).reduce((test, field) => {
-          return (test && !!response[field])
-        }, true)
+      if(field){
+        return !!validator({field, value, fields})
       }
 
-      return !!response[field]
+      return keys(data).map((key) => {
+        return !!validator({field: key, value: fields[key], fields})
+      }).reduce((acc, result) => {
+        return acc && result
+      }, true)
     }
 
     const inject = () => {

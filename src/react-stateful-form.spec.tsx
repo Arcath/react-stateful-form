@@ -4,7 +4,7 @@ import * as Adapter from 'enzyme-adapter-react-16'
 
 configure({ adapter: new Adapter() })
 
-import {StatefulForm, RenderFunctionArguments} from './react-stateful-form'
+import {StatefulForm, RenderFunctionArguments, InjectFunction} from './react-stateful-form'
 
 describe('React Stateful Form', () => {
   it('should output the child render functions output', () => {
@@ -161,6 +161,40 @@ describe('React Stateful Form', () => {
     expect(wrapper.find('input').props().className).toBe('valid')
   })
 
+  it('should validate the whole form', () => {
+    const wrapper = shallow(
+      <StatefulForm
+        data={{
+          test: 'init'
+        }}
+        onSubmit={(data) => {
+          expect(data.test).toBe('pass')
+        }}
+        validator={({value}) => {
+          return (value === 'pass')
+        }}
+      >
+        {({input, valid}) => {
+          const disabled = !valid()
+
+          return <div>
+            {input('test', ({value, field, update, valid}) => {
+              return <input value={value} name={field} onChange={(e) => update(e.target.value)} className={valid() ? 'valid' : 'invalid'} type="text" />
+            })}
+            <input type="submit" value="Submit" disabled={disabled} />
+          </div>
+        }}
+      </StatefulForm>
+    )
+
+    const submit = wrapper.find('input[type="submit"]')
+    const input = wrapper.find('input[type="text"]')
+
+    expect(submit.props().disabled).toBe(true)
+    input.simulate('change', {target: {value: 'pass'}})
+    expect(wrapper.find('input[type="submit"]').props().disabled).toBe(false)
+  })
+
   it('should work like the readme says it does', () => {
     // This test should only fail if others before it do.
 
@@ -260,7 +294,7 @@ describe('React Stateful Form', () => {
     }
 
     mount(
-      <StatefulForm data={data} onSubmit={() => {}} injectable={injectable}>
+      <StatefulForm data={data} onSubmit={() => {}} injectable={injectable as InjectFunction<any, {test: boolean}>}>
         {({inject}) => {
           const {test} = inject()
 
